@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindIT</title>
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <img src="" alt="">
+        <h1>FindIT</h1>
+    </header>
+    <main>
+        <nav class="nav">
+            <h2>Campus Lost & Found</h2>
+            <div class="btn-group">
+                <button data-status="All" aria-pressed="true">All</button>
+                <button data-status="Lost" aria-pressed="false">Lost</button>
+                <button data-status="Found" aria-pressed="false">Found</button>
+                <button data-status="Claimed" aria-pressed="false">Claimed</button>
+            </div>
+        </nav>
+        <br>
+        <section class="category">
+            <button data-category="All" aria-pressed="true">All</button>
+            <button data-category="Electronics" aria-pressed="false">Electronics</button>
+            <button data-category="Personal Item" aria-pressed="false">Personal Items</button>
+            <button data-category="School Item" aria-pressed="false">School Items</button>
+            <button data-category="Others" aria-pressed="false">Others</button>
+
+            <button id="reportItem">+Report Lost Item</button>
+        </section>
+
+        <section id="lostItemsContainer">
+            <p class="office-notice">
+                Found items are kept at the <strong>Student Assistant Office</strong>.
+                Please go there with a valid ID to claim your item.
+            </p>
+        </section>
+        <br>
+        <dialog id="reportDialog">
+            <form id="reportForm" method="dialog">
+                <h2>Report Lost Item</h2>
+                <label>Your Name:
+                    <input type="text" name="name" required>
+                </label>
+                <br>
+                <label>Item Name:
+                    <input type="text" name="item" required>
+                </label>
+                <br>
+                <label>Category
+                    <select name="category" required>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Personal Item">Personal Item</option>
+                        <option value="School Item">School Item</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </label>
+                <br>
+                <label>Description
+                    <textarea name="description" placeholder="Describe your item (e.g color, brand..)"></textarea>
+                </label>
+                <br>
+                <label>Where did you last see it?
+                    <input type="text" name="location">
+                </label>
+                <br>
+                <label>Date Lost
+                    <input type="date" name="dateLost">
+                </label>
+                <br>
+                <div class="dialog-actions">
+                    <button type="button" id="cancelReport">Cancel</button>
+                    <button type="submit">Submit Report</button>
+                </div>
+            </form>
+        </dialog>
+    </main>
+</body>
+
+</html>
