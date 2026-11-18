@@ -3,7 +3,8 @@ const dialog = document.getElementById("reportDialog");
 const form = document.getElementById("reportForm");
 const cancelBtn = document.getElementById("cancelReport");
 const container = document.getElementById("lostItemsContainer");
-const categoryButtons = document.querySelectorAll(".category button[data-category]");
+const resultsHeading = document.getElementById("resultsHeading");
+const categoryButtons = document.querySelectorAll("button[data-category]");
 const statusButtons = document.querySelectorAll(".btn-group button[data-status]");
 
 // Sample items:
@@ -45,11 +46,24 @@ let activeStatus = "All";
 
 // ---------- Rendering ----------
 
+const categoryIcons = {
+    Electronics: "EL",
+    "Personal Item": "PI",
+    "School Item": "SC",
+    Others: "OT",
+};
+
 function addLine(parent, label, value) {
     const p = document.createElement("p");
+    p.className = "meta-line";
+
     const strong = document.createElement("strong");
-    strong.textContent = label + " ";
-    p.append(strong, value || "Not specified");
+    strong.textContent = label;
+
+    const span = document.createElement("span");
+    span.textContent = value || "Not specified";
+
+    p.append(strong, span);
     parent.appendChild(p);
 }
 
@@ -57,22 +71,36 @@ function renderItem(report) {
     const card = document.createElement("article");
     card.className = "item-card";
 
+    const top = document.createElement("div");
+    top.className = "card-top";
+
+    const icon = document.createElement("div");
+    icon.className = "category-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = categoryIcons[report.category] || "--";
+
     const badge = document.createElement("span");
     badge.className = "status-badge status-" + report.status.toLowerCase();
     badge.textContent = report.status;
-    card.appendChild(badge);
+
+    top.append(icon, badge);
+    card.appendChild(top);
 
     const title = document.createElement("h3");
     title.textContent = report.item;
     card.appendChild(title);
 
     const desc = document.createElement("p");
+    desc.className = "item-description";
     desc.textContent = report.description || "No description provided.";
     card.appendChild(desc);
 
-    addLine(card, "Category:", report.category);
-    addLine(card, "Location:", report.location);
-    addLine(card, "Date:", report.dateLost);
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    addLine(meta, "Category:", report.category);
+    addLine(meta, "Location:", report.location);
+    addLine(meta, "Date:", report.dateLost);
+    card.appendChild(meta);
 
     container.appendChild(card);
 }
@@ -86,8 +114,11 @@ function renderItems() {
             (activeStatus === "All" || item.status === activeStatus)
     );
 
+    resultsHeading.textContent = `${visible.length} ${visible.length === 1 ? "item" : "items"} found`;
+
     if (visible.length === 0) {
         const empty = document.createElement("p");
+        empty.className = "empty-state";
         empty.textContent = "No items match these filters.";
         container.appendChild(empty);
         return;

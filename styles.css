@@ -1,0 +1,448 @@
+/* TraceBack — simple campus lost & found UI */
+
+:root {
+    --bg: #f3f6fb;
+    --surface: #ffffff;
+    --ink: #14283e;
+    --muted: #64748b;
+    --line: #e3e9f2;
+    --accent: #0f766e;
+    --accent-dark: #0b5f58;
+    --accent-soft: #e6f5f2;
+    --shadow: 0 10px 30px rgba(20, 40, 62, 0.07);
+    --radius: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 10% 0%, #e8f4f1 0, transparent 32rem),
+        radial-gradient(circle at 90% 5%, #e9eefb 0, transparent 30rem),
+        var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(15, 118, 110, 0.35);
+    outline-offset: 2px;
+}
+
+.app-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 28px 20px 56px;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.logo-mark {
+    width: 56px;
+    height: 56px;
+    flex: none;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
+    object-fit: contain;
+}
+
+.site-header h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+}
+
+.site-header p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+/* ---------- Toolbar ---------- */
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.toolbar h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 650;
+}
+
+.btn-group,
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.btn-group button,
+.category-filters button {
+    padding: 8px 15px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-group button:hover,
+.category-filters button:hover {
+    border-color: #b9d8d2;
+    color: var(--accent);
+}
+
+.btn-group button[aria-pressed="true"],
+.category-filters button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 0 16px;
+}
+
+.filter-label {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.report-button {
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 650;
+    box-shadow: 0 6px 14px rgba(20, 40, 62, 0.18);
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.report-button:hover {
+    background: #244360;
+    transform: translateY(-1px);
+}
+
+/* ---------- Notice & results ---------- */
+
+.office-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    border: 1px solid #cfe6df;
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: #27544e;
+    font-size: 0.94rem;
+}
+
+.results-heading {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.item-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px rgba(20, 40, 62, 0.11);
+}
+
+.card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.category-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.status-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-lost {
+    background: #fff4dd;
+    color: #a35b09;
+}
+
+.status-found {
+    background: #dcf6e9;
+    color: #08794f;
+}
+
+.status-claimed {
+    background: #e9eef5;
+    color: #52627a;
+}
+
+.item-card h3 {
+    margin: 0 0 6px;
+    font-size: 1.08rem;
+    line-height: 1.3;
+}
+
+.item-description {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.card-meta {
+    margin: auto 0 0;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+}
+
+.meta-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 5px 0;
+    font-size: 0.84rem;
+}
+
+.meta-line strong {
+    flex: none;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.meta-line span {
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    padding: 40px 20px;
+    border: 1px dashed #cbd5e1;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--muted);
+    text-align: center;
+}
+
+/* ---------- Report dialog ---------- */
+
+dialog {
+    width: min(520px, calc(100% - 32px));
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 30px 80px rgba(10, 30, 50, 0.28);
+}
+
+dialog::backdrop {
+    background: rgba(12, 27, 43, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.report-form {
+    display: grid;
+    gap: 14px;
+    padding: 26px;
+}
+
+.report-form h2 {
+    margin: 0 0 2px;
+    font-size: 1.35rem;
+}
+
+.report-form label {
+    display: grid;
+    gap: 6px;
+    font-size: 0.86rem;
+    font-weight: 650;
+}
+
+.report-form input,
+.report-form select,
+.report-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d7dfeb;
+    border-radius: 9px;
+    background: #fbfcfe;
+    color: var(--ink);
+    font-weight: 400;
+}
+
+.report-form textarea {
+    min-height: 84px;
+    resize: vertical;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.dialog-actions button {
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-weight: 650;
+}
+
+#cancelReport {
+    border: 1px solid var(--line);
+    background: #f8fafc;
+    color: var(--muted);
+}
+
+.dialog-actions button[type="submit"] {
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+}
+
+.dialog-actions button[type="submit"]:hover {
+    background: var(--accent-dark);
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 600px) {
+    .app-shell {
+        padding: 20px 14px 40px;
+    }
+
+    .site-header {
+        margin-bottom: 20px;
+    }
+
+    .toolbar,
+    .filter-bar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .report-button {
+        width: 100%;
+    }
+
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-form {
+        padding: 20px;
+    }
+
+    .dialog-actions button {
+        flex: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
