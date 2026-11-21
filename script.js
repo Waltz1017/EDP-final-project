@@ -6,6 +6,18 @@ const container = document.getElementById("lostItemsContainer");
 const resultsHeading = document.getElementById("resultsHeading");
 const categoryButtons = document.querySelectorAll("button[data-category]");
 const statusButtons = document.querySelectorAll(".btn-group button[data-status]");
+const imageInput = document.getElementById("reportImages");
+const imagePreview = document.getElementById("imagePreview");
+const imageError = document.getElementById("imageError");
+const dateInput = document.getElementById("reportDate");
+const dateError = document.getElementById("dateError");
+
+const MIN_REPORT_DATE = "2026-01-01";
+const MAX_REPORT_DATE = "2026-12-31";
+const MAX_IMAGES = 5;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB per image
+let selectedImages = [];
+let selectionToken = 0;
 
 // Sample items:
 const lostItems = [
@@ -95,6 +107,22 @@ function renderItem(report) {
     desc.textContent = report.description || "No description provided.";
     card.appendChild(desc);
 
+    if (report.images && report.images.length > 0) {
+        const images = document.createElement("div");
+        images.className = "item-images";
+
+        report.images.forEach((src, index) => {
+            const img = document.createElement("img");
+            img.className = "item-image";
+            img.src = src;
+            img.alt = `${report.item} photo ${index + 1}`;
+            img.loading = "lazy";
+            images.appendChild(img);
+        });
+
+        card.appendChild(images);
+    }
+
     const meta = document.createElement("div");
     meta.className = "card-meta";
     addLine(meta, "Category:", report.category);
@@ -145,21 +173,156 @@ setupFilter(statusButtons, "status", (value) => (activeStatus = value));
 
 // ---------- Report dialog ----------
 
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+// The latest allowed date is today, capped at the end of 2026.
+// Recalculated when the dialog opens so the range grows as time passes.
+function getMaxReportDate() {
+    const today = formatLocalDate(new Date());
+    if (today < MIN_REPORT_DATE) return MIN_REPORT_DATE;
+    return today > MAX_REPORT_DATE ? MAX_REPORT_DATE : today;
+}
+
+function updateDateLimits() {
+    dateInput.min = MIN_REPORT_DATE;
+    dateInput.max = getMaxReportDate();
+}
+
+function setDateError(message) {
+    dateError.textContent = message;
+}
+
+function isDateAllowed(value) {
+    return !value || (value >= MIN_REPORT_DATE && value <= getMaxReportDate());
+}
+
+function validateDate() {
+    if (isDateAllowed(dateInput.value)) {
+        setDateError("");
+        return true;
+    }
+
+    dateInput.value = "";
+    setDateError("Choose a date in 2026 that is not in the future.");
+    return false;
+}
+
+updateDateLimits();
+
+dateInput.addEventListener("change", validateDate);
+form.addEventListener("reset", () => setDateError(""));
+
+function setImageError(message) {
+    imageError.textContent = message;
+}
+
+function renderImagePreview() {
+    imagePreview.replaceChildren();
+
+    selectedImages.forEach((image, index) => {
+        const figure = document.createElement("figure");
+
+        const img = document.createElement("img");
+        img.src = image.dataUrl;
+        img.alt = `Preview of ${image.name}`;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.setAttribute("aria-label", `Remove ${image.name}`);
+        remove.addEventListener("click", () => {
+            selectedImages.splice(index, 1);
+            imageInput.value = "";
+            renderImagePreview();
+        });
+
+        figure.append(img, remove);
+        imagePreview.appendChild(figure);
+    });
+}
+
+function clearImages() {
+    selectedImages = [];
+    selectionToken++;
+    imageInput.value = "";
+    setImageError("");
+    renderImagePreview();
+}
+
+function readImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
+        reader.onerror = () => reject(new Error(`Could not read ${file.name}.`));
+        reader.readAsDataURL(file);
+    });
+}
+
+imageInput.addEventListener("change", async () => {
+    const token = ++selectionToken;
+    const files = Array.from(imageInput.files || []);
+    setImageError("");
+
+    if (files.some((file) => !file.type.startsWith("image/"))) {
+        clearImages();
+        setImageError("Only image files can be attached.");
+        return;
+    }
+
+    if (files.length > MAX_IMAGES) {
+        clearImages();
+        setImageError(`You can attach up to ${MAX_IMAGES} images.`);
+        return;
+    }
+
+    if (files.some((file) => file.size > MAX_IMAGE_SIZE)) {
+        clearImages();
+        setImageError("Each image must be 5 MB or smaller.");
+        return;
+    }
+
+    try {
+        const images = await Promise.all(files.map(readImage));
+        if (token !== selectionToken) return; // A newer selection replaced this one.
+
+        selectedImages = images;
+        renderImagePreview();
+    } catch (error) {
+        if (token === selectionToken) setImageError(error.message);
+    }
+});
+
+// Clear previews and errors when the dialog is dismissed with Escape.
+dialog.addEventListener("close", () => {
+    clearImages();
+    setDateError("");
+});
+
 reportBtn.addEventListener("click", () => {
+    updateDateLimits();
     dialog.showModal();
 });
 
 cancelBtn.addEventListener("click", () => {
     form.reset();
+    clearImages();
     dialog.close();
 });
 
 form.addEventListener("submit", (event) => {
     event.preventDefault();
 
+    if (!validateDate()) return;
+
     const report = {
         id: nextId++,
         ...Object.fromEntries(new FormData(form)),
+        images: selectedImages.map((image) => image.dataUrl),
         status: "Lost",
     };
 
@@ -167,6 +330,7 @@ form.addEventListener("submit", (event) => {
     renderItems();
 
     form.reset();
+    clearImages();
     dialog.close();
 });
 

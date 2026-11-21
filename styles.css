@@ -407,6 +407,60 @@ dialog::backdrop {
     background: var(--accent-dark);
 }
 
+/* ---------- Attached images & field errors ---------- */
+
+.image-preview,
+.item-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.image-preview figure {
+    margin: 0;
+}
+
+.image-preview img,
+.item-image {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+}
+
+.image-preview button {
+    display: block;
+    margin-top: 4px;
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.image-preview button:hover {
+    border-color: #b9d8d2;
+    color: var(--accent);
+}
+
+.image-error,
+.date-error {
+    margin: 0;
+    color: #b42318;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.report-form small {
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 600px) {

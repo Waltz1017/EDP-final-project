@@ -76,8 +76,16 @@
                         <input type="text" name="location">
                     </label>
                     <label>Date Lost
-                        <input type="date" name="dateLost">
+                        <input type="date" id="reportDate" name="dateLost" min="2026-01-01" max="2026-12-31">
+                        <small>Only dates in 2026 up to today can be reported.</small>
                     </label>
+                    <p id="dateError" class="date-error" role="alert"></p>
+                    <label>Photos of the item (optional)
+                        <input type="file" id="reportImages" accept="image/*" multiple>
+                        <small>You can select up to 5 images (max 5 MB each).</small>
+                    </label>
+                    <div id="imagePreview" class="image-preview" aria-live="polite"></div>
+                    <p id="imageError" class="image-error" role="alert"></p>
                     <div class="dialog-actions">
                         <button type="button" id="cancelReport">Cancel</button>
                         <button type="submit">Submit Report</button>
