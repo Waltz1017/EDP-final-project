@@ -109,6 +109,34 @@
                     </div>
                 </form>
             </dialog>
+
+            <dialog id="itemDetailDialog" aria-labelledby="detailTitle">
+                <article class="detail-dialog">
+                    <div class="detail-header">
+                        <div>
+                            <p class="detail-eyebrow">Item Details</p>
+                            <h2 id="detailTitle"></h2>
+                        </div>
+                        <button type="button" class="detail-close" id="closeDetail" aria-label="Close details">&times;</button>
+                    </div>
+                    <div class="detail-body">
+                        <div class="detail-top">
+                            <span id="detailStatus" class="status-badge"></span>
+                            <p id="detailCategory" class="detail-category"></p>
+                        </div>
+                        <p id="detailDescription" class="detail-description"></p>
+                        <dl class="detail-meta">
+                            <div><dt>Reported by</dt><dd id="detailName"></dd></div>
+                            <div><dt>Location</dt><dd id="detailLocation"></dd></div>
+                            <div><dt>Date lost</dt><dd id="detailDate"></dd></div>
+                        </dl>
+                        <div id="detailImages" class="detail-images" aria-label="Item photos"></div>
+                        <p id="detailClaimNotice" class="detail-claim-notice" hidden>
+                            Found items are kept at the <strong>Student Assistant Office</strong>. Please bring a valid ID to claim this item. Status updates are handled by the admin.
+                        </p>
+                    </div>
+                </article>
+            </dialog>
         </main>
     </div>
 </body>

@@ -1,4 +1,4 @@
-/* TraceBack — simple campus lost & found UI */
+
 
 :root {
     --bg: #f3f6fb;
@@ -55,7 +55,7 @@ textarea:focus-visible {
     padding: 28px 20px 56px;
 }
 
-/* ---------- Header ---------- */
+
 
 .site-header {
     display: flex;
@@ -89,7 +89,7 @@ textarea:focus-visible {
     font-size: 0.95rem;
 }
 
-/* ---------- Toolbar ---------- */
+
 
 .toolbar {
     display: flex;
@@ -278,7 +278,7 @@ textarea:focus-visible {
     transform: translateY(-1px);
 }
 
-/* ---------- Notice & results ---------- */
+
 
 .office-notice {
     display: flex;
@@ -316,12 +316,19 @@ textarea:focus-visible {
     border-radius: var(--radius);
     background: var(--surface);
     box-shadow: var(--shadow);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
 }
 
 .item-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 16px 34px rgba(20, 40, 62, 0.11);
+    border-color: #b9d8d2;
+}
+
+.item-card:focus-visible {
+    outline: 3px solid rgba(15, 118, 110, 0.35);
+    outline-offset: 2px;
 }
 
 .card-top {
@@ -408,6 +415,13 @@ textarea:focus-visible {
     border-top: 1px dashed var(--line);
 }
 
+.card-hint {
+    margin: 10px 0 0;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
 .meta-line {
     display: flex;
     justify-content: space-between;
@@ -442,7 +456,7 @@ textarea:focus-visible {
     text-align: center;
 }
 
-/* ---------- Report dialog ---------- */
+
 
 dialog {
     width: min(520px, calc(100% - 32px));
@@ -523,7 +537,7 @@ dialog::backdrop {
     background: var(--accent-dark);
 }
 
-/* ---------- Attached images & field errors ---------- */
+
 
 .image-preview,
 .item-images {
@@ -539,9 +553,13 @@ dialog::backdrop {
 
 .image-preview img,
 .item-image {
-    width: 120px;
-    height: 90px;
-    object-fit: cover;
+    display: block;
+    max-width: 100%;
+    max-height: 160px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    background: #f8fafc;
     border: 1px solid var(--line);
     border-radius: 9px;
 }
@@ -588,7 +606,7 @@ dialog::backdrop {
     font-weight: 600;
 }
 
-/* ---------- Toast notifications ---------- */
+
 
 .toast-container {
     position: fixed;
@@ -633,13 +651,165 @@ dialog::backdrop {
     color: #0f766e;
 }
 
+.toast.error {
+    border-left: 4px solid #b42318;
+    background: #fff5f4;
+    color: #b42318;
+}
+
 .toast .toast-icon {
     font-size: 1.25rem;
     flex: none;
-    aria-hidden: true;
 }
 
-/* ---------- Small screens ---------- */
+
+
+.detail-dialog {
+    padding: 24px;
+}
+
+.detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.detail-eyebrow {
+    margin: 0 0 2px;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.detail-header h2 {
+    margin: 0;
+    font-size: 1.45rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.detail-close {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.detail-close:hover {
+    border-color: #b9d8d2;
+    color: var(--accent);
+}
+
+.detail-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.detail-category {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.detail-description {
+    margin: 0 0 16px;
+    color: var(--ink);
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+}
+
+.detail-meta {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 16px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.detail-meta div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.detail-meta dt {
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.detail-meta dd {
+    margin: 0;
+    text-align: right;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.detail-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.detail-images:empty,
+.detail-images[hidden] {
+    display: none;
+}
+
+.detail-image {
+    display: block;
+    width: 100%;
+    max-height: 420px;
+    height: auto;
+    object-fit: contain;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.detail-no-images {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 14px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.detail-claim-notice {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid #cfe6df;
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    background: var(--accent-soft);
+    color: #27544e;
+    font-size: 0.88rem;
+}
+
+.detail-claim-notice[hidden] {
+    display: none;
+}
+
+
 
 @media (max-width: 600px) {
     .app-shell {

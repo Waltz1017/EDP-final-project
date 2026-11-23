@@ -14,6 +14,17 @@ const imagePreview = document.getElementById("imagePreview");
 const imageError = document.getElementById("imageError");
 const dateInput = document.getElementById("reportDate");
 const dateError = document.getElementById("dateError");
+const detailDialog = document.getElementById("itemDetailDialog");
+const closeDetailBtn = document.getElementById("closeDetail");
+const detailTitle = document.getElementById("detailTitle");
+const detailStatus = document.getElementById("detailStatus");
+const detailCategory = document.getElementById("detailCategory");
+const detailDescription = document.getElementById("detailDescription");
+const detailName = document.getElementById("detailName");
+const detailLocation = document.getElementById("detailLocation");
+const detailDate = document.getElementById("detailDate");
+const detailImages = document.getElementById("detailImages");
+const detailClaimNotice = document.getElementById("detailClaimNotice");
 
 const MIN_REPORT_DATE = "2026-01-01";
 const MAX_REPORT_DATE = "2026-12-31";
@@ -22,45 +33,67 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 let selectedImages = [];
 let selectionToken = 0;
 
-// Sample items:
-const lostItems = [
-    // ----- LOST -----
+const STORAGE_KEY = "traceback.items.v1";
+
+const SAMPLE_ITEMS = [
     { id: 1, name: "Maria Santos", item: "Black Wallet", category: "Personal Item",
-      description: "Black leather wallet with initials M.S.", location: "Canteen", dateLost: "2026-11-10", status: "Lost" },
+      description: "Black leather wallet with initials M.S.", location: "Canteen", dateLost: "2026-11-10", status: "Lost", images: [] },
     { id: 2, name: "Ana Cruz", item: "Wireless Earbuds", category: "Electronics",
-      description: "White earbuds in a small charging case.", location: "Gym", dateLost: "2026-11-12", status: "Lost" },
-    { id: 3, name: "Paolo Lim", item: "Blue Notebook", category: "School Item",
-      description: "Blue spiral notebook with Chemistry notes.", location: "Room 101", dateLost: "2026-11-11", status: "Lost" },
-    { id: 4, name: "Grace Tan", item: "Silver Water Bottle", category: "Others",
-      description: "Silver tumbler with a sticker of a cat.", location: "Football Field", dateLost: "2026-11-13", status: "Lost" },
+      description: "White earbuds in a small charging case.", location: "Gym", dateLost: "2026-11-12", status: "Lost", images: [] },
 
-    // ----- FOUND -----
-    { id: 5, name: "Security Office", item: "iPhone with Blue Case", category: "Electronics",
-      description: "Lock screen is a beach photo.", location: "Library", dateLost: "2026-11-11", status: "Found" },
-    { id: 6, name: "Admin Office", item: "Set of Keys", category: "Personal Item",
-      description: "Three keys on a red lanyard.", location: "Hallway, 2nd Floor", dateLost: "2026-11-12", status: "Found" },
-    { id: 7, name: "Library Staff", item: "Math Textbook", category: "School Item",
-      description: "Grade 11 Algebra textbook, name erased on the cover.", location: "Library", dateLost: "2026-11-09", status: "Found" },
-    { id: 8, name: "Admin Office", item: "Green Umbrella", category: "Others",
-      description: "Large green umbrella with a wooden handle.", location: "Main Gate", dateLost: "2026-11-09", status: "Found" },
+    { id: 3, name: "Security Office", item: "iPhone with Blue Case", category: "Electronics",
+      description: "Lock screen is a beach photo.", location: "Library", dateLost: "2026-11-11", status: "Found", images: [] },
+    { id: 4, name: "Admin Office", item: "Set of Keys", category: "Personal Item",
+      description: "Three keys on a red lanyard.", location: "Hallway, 2nd Floor", dateLost: "2026-11-12", status: "Found", images: [] },
 
-    // ----- CLAIMED -----
-    { id: 9, name: "Leo Garcia", item: "Power Bank", category: "Electronics",
-      description: "10,000 mAh black power bank.", location: "Computer Lab", dateLost: "2026-11-05", status: "Claimed" },
-    { id: 10, name: "Sofia Ramos", item: "Prescription Glasses", category: "Personal Item",
-      description: "Black round frames in a gray case.", location: "Cafeteria", dateLost: "2026-11-06", status: "Claimed" },
-    { id: 11, name: "John Reyes", item: "Scientific Calculator", category: "School Item",
-      description: "Casio fx-991, name written on the back.", location: "Room 204", dateLost: "2026-11-08", status: "Claimed" },
-    { id: 12, name: "Mark Dizon", item: "Gray Hoodie", category: "Others",
-      description: "Gray pullover hoodie, size M.", location: "Gym", dateLost: "2026-11-07", status: "Claimed" },
+    { id: 5, name: "Leo Garcia", item: "Power Bank", category: "Electronics",
+      description: "10,000 mAh black power bank.", location: "Computer Lab", dateLost: "2026-11-05", status: "Claimed", images: [] },
+    { id: 6, name: "Sofia Ramos", item: "Prescription Glasses", category: "Personal Item",
+      description: "Black round frames in a gray case.", location: "Cafeteria", dateLost: "2026-11-06", status: "Claimed", images: [] },
 ];
 
-let nextId = lostItems.length + 1;
+function normalizeItem(item, fallbackId) {
+    const id = Number(item?.id);
+    return {
+        id: Number.isFinite(id) && id > 0 ? id : fallbackId,
+        name: String(item?.name ?? ""),
+        item: String(item?.item ?? ""),
+        category: String(item?.category ?? "Others"),
+        description: String(item?.description ?? ""),
+        location: String(item?.location ?? ""),
+        dateLost: String(item?.dateLost ?? ""),
+        status: ["Lost", "Found", "Claimed"].includes(item?.status) ? item.status : "Lost",
+        images: Array.isArray(item?.images) ? item.images.filter((src) => typeof src === "string") : [],
+    };
+}
+
+function loadItems() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return SAMPLE_ITEMS.map((item) => ({ ...item, images: [...item.images] }));
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error("Invalid stored items");
+        return parsed.map((item, index) => normalizeItem(item, index + 1));
+    } catch {
+        return SAMPLE_ITEMS.map((item) => ({ ...item, images: [...item.images] }));
+    }
+}
+
+function saveItems() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(lostItems));
+        return true;
+    } catch {
+        showNotification("Could not save changes locally. Storage may be full.", "error");
+        return false;
+    }
+}
+
+let lostItems = loadItems();
+let nextId = lostItems.reduce((max, item) => Math.max(max, item.id), 0) + 1;
 let activeCategory = "All";
 let activeStatus = "All";
 let activeSearch = "";
-
-// ---------- Rendering ----------
 
 const categoryIcons = {
     Electronics: "EL",
@@ -87,6 +120,10 @@ function addLine(parent, label, value) {
 function renderItem(report) {
     const card = document.createElement("article");
     card.className = "item-card";
+    card.tabIndex = 0;
+    card.dataset.id = String(report.id);
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `View details for ${report.item}`);
 
     const top = document.createElement("div");
     top.className = "card-top";
@@ -137,6 +174,19 @@ function renderItem(report) {
     addLine(meta, "Date:", report.dateLost);
     card.appendChild(meta);
 
+    const hint = document.createElement("p");
+    hint.className = "card-hint";
+    hint.textContent = "Click to view details";
+    card.appendChild(hint);
+
+    card.addEventListener("click", () => openDetailDialog(report.id));
+    card.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openDetailDialog(report.id);
+        }
+    });
+
     container.appendChild(card);
 }
 
@@ -162,8 +212,6 @@ function renderItems() {
 
     visible.forEach(renderItem);
 }
-
-// ---------- Filters ----------
 
 statusButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -193,7 +241,46 @@ clearSearchBtn.addEventListener("click", () => {
     renderItems();
 });
 
-// ---------- Report dialog ----------
+function openDetailDialog(id) {
+    const report = lostItems.find((item) => item.id === id);
+    if (!report) return;
+
+    detailTitle.textContent = report.item;
+    detailStatus.className = `status-badge status-${report.status.toLowerCase()}`;
+    detailStatus.textContent = report.status;
+    detailCategory.textContent = report.category;
+    detailDescription.textContent = report.description || "No description provided.";
+    detailName.textContent = report.name || "Not specified";
+    detailLocation.textContent = report.location || "Not specified";
+    detailDate.textContent = report.dateLost || "Not specified";
+    detailClaimNotice.hidden = report.status !== "Found";
+
+    detailImages.replaceChildren();
+    if (report.images && report.images.length > 0) {
+        report.images.forEach((src, index) => {
+            const img = document.createElement("img");
+            img.className = "detail-image";
+            img.src = src;
+            img.alt = `${report.item} photo ${index + 1}`;
+            img.loading = "lazy";
+            detailImages.appendChild(img);
+        });
+        detailImages.hidden = false;
+    } else {
+        const empty = document.createElement("p");
+        empty.className = "detail-no-images";
+        empty.textContent = "No photos attached.";
+        detailImages.appendChild(empty);
+        detailImages.hidden = false;
+    }
+
+    detailDialog.showModal();
+}
+
+closeDetailBtn.addEventListener("click", () => detailDialog.close());
+detailDialog.addEventListener("click", (event) => {
+    if (event.target === detailDialog) detailDialog.close();
+});
 
 function formatLocalDate(date) {
     const year = date.getFullYear();
@@ -202,8 +289,6 @@ function formatLocalDate(date) {
     return `${year}-${month}-${day}`;
 }
 
-// The latest allowed date is today, capped at the end of 2026.
-// Recalculated when the dialog opens so the range grows as time passes.
 function getMaxReportDate() {
     const today = formatLocalDate(new Date());
     if (today < MIN_REPORT_DATE) return MIN_REPORT_DATE;
@@ -214,8 +299,6 @@ function updateDateLimits() {
     dateInput.min = MIN_REPORT_DATE;
     dateInput.max = getMaxReportDate();
 }
-
-// ---------- Name input filtering (numbers are silently removed) ----------
 
 const NAME_NUMBER_PATTERN = /\d/;
 
@@ -249,8 +332,6 @@ updateDateLimits();
 
 dateInput.addEventListener("change", validateDate);
 
-// ---------- Character counters ----------
-
 function updateCharCounter(field) {
     const counter = form.querySelector(`[data-count-for="${field.name}"]`);
     if (!counter) return;
@@ -268,7 +349,7 @@ limitedFields.forEach((field) => {
 
 form.addEventListener("reset", () => {
     setDateError("");
-    // Reset fires before field values are cleared, so refresh after the browser resets them.
+    
     requestAnimationFrame(() => limitedFields.forEach(updateCharCounter));
 });
 
@@ -343,7 +424,7 @@ imageInput.addEventListener("change", async () => {
 
     try {
         const images = await Promise.all(files.map(readImage));
-        if (token !== selectionToken) return; // A newer selection replaced this one.
+        if (token !== selectionToken) return; 
 
         selectedImages = images;
         renderImagePreview();
@@ -352,13 +433,11 @@ imageInput.addEventListener("change", async () => {
     }
 });
 
-// Clear previews and errors whenever the dialog is dismissed.
 dialog.addEventListener("close", () => {
     clearImages();
     setDateError("");
 });
 
-// Clicks on the backdrop are reported with the dialog itself as the target.
 dialog.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close();
 });
@@ -401,7 +480,6 @@ function showNotification(message, type = "success") {
 
     container.appendChild(toast);
 
-    // Allow the entrance transition to run.
     requestAnimationFrame(() => toast.classList.add("show"));
 
     setTimeout(() => {
@@ -413,7 +491,6 @@ function showNotification(message, type = "success") {
 form.addEventListener("submit", (event) => {
     event.preventDefault();
 
-    // Keep the name free of numbers even if it was set programmatically.
     nameInput.value = nameInput.value.replace(/\d/g, "");
 
     if (!validateDate()) return;
@@ -426,10 +503,25 @@ form.addEventListener("submit", (event) => {
     };
 
     lostItems.push(report);
+    const saved = saveItems();
+    if (!saved && report.images.length > 0) {
+        
+        report.images = [];
+        if (!saveItems()) {
+            lostItems.pop();
+            renderItems();
+            return;
+        }
+        showNotification(`"${report.item}" was reported, but photos were not saved due to storage limits.`, "error");
+    } else if (!saved) {
+        lostItems.pop();
+        renderItems();
+        return;
+    } else {
+        showNotification(`"${report.item}" has been reported as lost.`);
+    }
+
     renderItems();
-
-    showNotification(`"${report.item}" has been reported as lost.`);
-
     form.reset();
     clearImages();
     dialog.close();
