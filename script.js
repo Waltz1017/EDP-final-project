@@ -24,7 +24,6 @@ const detailName = document.getElementById("detailName");
 const detailLocation = document.getElementById("detailLocation");
 const detailDate = document.getElementById("detailDate");
 const detailImages = document.getElementById("detailImages");
-const detailClaimNotice = document.getElementById("detailClaimNotice");
 
 const MIN_REPORT_DATE = "2026-01-01";
 const MAX_REPORT_DATE = "2026-12-31";
@@ -145,12 +144,6 @@ function renderItem(report) {
     title.title = title.textContent;
     card.appendChild(title);
 
-    const desc = document.createElement("p");
-    desc.className = "item-description";
-    desc.textContent = report.description || "No description provided.";
-    desc.title = desc.textContent;
-    card.appendChild(desc);
-
     if (report.images && report.images.length > 0) {
         const images = document.createElement("div");
         images.className = "item-images";
@@ -253,7 +246,6 @@ function openDetailDialog(id) {
     detailName.textContent = report.name || "Not specified";
     detailLocation.textContent = report.location || "Not specified";
     detailDate.textContent = report.dateLost || "Not specified";
-    detailClaimNotice.hidden = report.status !== "Found";
 
     detailImages.replaceChildren();
     if (report.images && report.images.length > 0) {
