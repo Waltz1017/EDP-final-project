@@ -20,33 +20,46 @@
         </header>
 
         <main>
-            <nav class="toolbar" aria-label="Filter by status">
+            <div class="toolbar">
                 <h2>Campus Lost &amp; Found</h2>
-                <div class="btn-group">
+                <div class="search-control">
+                    <label class="search-field">
+                        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m16 16 4.5 4.5"></path>
+                        </svg>
+                        <span class="sr-only">Search items by name</span>
+                        <input type="search" id="itemSearch" placeholder="Search item name..." autocomplete="off">
+                    </label>
+                    <button type="button" class="clear-search" id="clearSearch" aria-label="Clear search" hidden>&times;</button>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <nav class="btn-group" aria-label="Filter by status">
                     <button data-status="All" aria-pressed="true">All</button>
                     <button data-status="Lost" aria-pressed="false">Lost</button>
                     <button data-status="Found" aria-pressed="false">Found</button>
                     <button data-status="Claimed" aria-pressed="false">Claimed</button>
-                </div>
-            </nav>
+                </nav>
 
-            <div class="filter-bar">
-                <div>
-                    <p class="filter-label">Category</p>
-                    <section class="category-filters" aria-label="Filter by category">
-                        <button data-category="All" aria-pressed="true">All</button>
-                        <button data-category="Electronics" aria-pressed="false">Electronics</button>
-                        <button data-category="Personal Item" aria-pressed="false">Personal Items</button>
-                        <button data-category="School Item" aria-pressed="false">School Items</button>
-                        <button data-category="Others" aria-pressed="false">Others</button>
-                    </section>
+                <div class="filter-actions">
+                    <label class="category-select">
+                        <span>Category</span>
+                        <select id="categoryFilter">
+                            <option value="All">All</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Personal Item">Personal Items</option>
+                            <option value="School Item">School Items</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </label>
+                    <button class="report-button" id="reportItem">+ Report Lost Item</button>
                 </div>
-                <button class="report-button" id="reportItem">+ Report Lost Item</button>
             </div>
 
             <p class="office-notice">
-                Found items are kept at the <strong>Student Assistant Office</strong>.
-                Please go there with a valid ID to claim your item.
+                Found items are kept at the<strong>Student Assistant Office</strong>|  Please go there with a valid ID to claim your item.
             </p>
 
             <p class="results-heading" id="resultsHeading" aria-live="polite"></p>
@@ -56,10 +69,12 @@
                 <form class="report-form" id="reportForm" method="dialog">
                     <h2>Report Lost Item</h2>
                     <label>Your Name:
-                        <input type="text" name="name" required>
+                        <input type="text" name="name" maxlength="50" required>
+                        <small class="char-count" data-count-for="name">0 / 50</small>
                     </label>
                     <label>Item Name:
-                        <input type="text" name="item" required>
+                        <input type="text" name="item" maxlength="60" required>
+                        <small class="char-count" data-count-for="item">0 / 60</small>
                     </label>
                     <label>Category
                         <select name="category" required>
@@ -70,10 +85,12 @@
                         </select>
                     </label>
                     <label>Description
-                        <textarea name="description" placeholder="Describe your item (e.g. color, brand..)"></textarea>
+                        <textarea name="description" maxlength="100" placeholder="Describe your item (e.g. color, brand..)"></textarea>
+                        <small class="char-count" data-count-for="description">0 / 100</small>
                     </label>
                     <label>Where did you last see it?
-                        <input type="text" name="location">
+                        <input type="text" name="location" maxlength="80">
+                        <small class="char-count" data-count-for="location">0 / 80</small>
                     </label>
                     <label>Date Lost
                         <input type="date" id="reportDate" name="dateLost" min="2026-01-01" max="2026-12-31">

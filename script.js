@@ -2,10 +2,13 @@ const reportBtn = document.getElementById("reportItem");
 const dialog = document.getElementById("reportDialog");
 const form = document.getElementById("reportForm");
 const cancelBtn = document.getElementById("cancelReport");
+const nameInput = form.querySelector('input[name="name"]');
 const container = document.getElementById("lostItemsContainer");
 const resultsHeading = document.getElementById("resultsHeading");
-const categoryButtons = document.querySelectorAll("button[data-category]");
+const categoryFilter = document.getElementById("categoryFilter");
 const statusButtons = document.querySelectorAll(".btn-group button[data-status]");
+const searchInput = document.getElementById("itemSearch");
+const clearSearchBtn = document.getElementById("clearSearch");
 const imageInput = document.getElementById("reportImages");
 const imagePreview = document.getElementById("imagePreview");
 const imageError = document.getElementById("imageError");
@@ -15,7 +18,7 @@ const dateError = document.getElementById("dateError");
 const MIN_REPORT_DATE = "2026-01-01";
 const MAX_REPORT_DATE = "2026-12-31";
 const MAX_IMAGES = 5;
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB per image
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; 
 let selectedImages = [];
 let selectionToken = 0;
 
@@ -55,6 +58,7 @@ const lostItems = [
 let nextId = lostItems.length + 1;
 let activeCategory = "All";
 let activeStatus = "All";
+let activeSearch = "";
 
 // ---------- Rendering ----------
 
@@ -74,6 +78,7 @@ function addLine(parent, label, value) {
 
     const span = document.createElement("span");
     span.textContent = value || "Not specified";
+    span.title = span.textContent;
 
     p.append(strong, span);
     parent.appendChild(p);
@@ -100,11 +105,13 @@ function renderItem(report) {
 
     const title = document.createElement("h3");
     title.textContent = report.item;
+    title.title = title.textContent;
     card.appendChild(title);
 
     const desc = document.createElement("p");
     desc.className = "item-description";
     desc.textContent = report.description || "No description provided.";
+    desc.title = desc.textContent;
     card.appendChild(desc);
 
     if (report.images && report.images.length > 0) {
@@ -139,7 +146,8 @@ function renderItems() {
     const visible = lostItems.filter(
         (item) =>
             (activeCategory === "All" || item.category === activeCategory) &&
-            (activeStatus === "All" || item.status === activeStatus)
+            (activeStatus === "All" || item.status === activeStatus) &&
+            item.item.toLowerCase().includes(activeSearch)
     );
 
     resultsHeading.textContent = `${visible.length} ${visible.length === 1 ? "item" : "items"} found`;
@@ -147,7 +155,7 @@ function renderItems() {
     if (visible.length === 0) {
         const empty = document.createElement("p");
         empty.className = "empty-state";
-        empty.textContent = "No items match these filters.";
+        empty.textContent = "No items match your search or these filters.";
         container.appendChild(empty);
         return;
     }
@@ -157,19 +165,33 @@ function renderItems() {
 
 // ---------- Filters ----------
 
-function setupFilter(buttons, dataKey, onChange) {
-    buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-            buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
-            button.setAttribute("aria-pressed", "true");
-            onChange(button.dataset[dataKey]);
-            renderItems();
-        });
+statusButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        statusButtons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+        button.setAttribute("aria-pressed", "true");
+        activeStatus = button.dataset.status;
+        renderItems();
     });
-}
+});
 
-setupFilter(categoryButtons, "category", (value) => (activeCategory = value));
-setupFilter(statusButtons, "status", (value) => (activeStatus = value));
+categoryFilter.addEventListener("change", () => {
+    activeCategory = categoryFilter.value;
+    renderItems();
+});
+
+searchInput.addEventListener("input", () => {
+    activeSearch = searchInput.value.trim().toLowerCase();
+    clearSearchBtn.hidden = searchInput.value.length === 0;
+    renderItems();
+});
+
+clearSearchBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    activeSearch = "";
+    clearSearchBtn.hidden = true;
+    searchInput.focus();
+    renderItems();
+});
 
 // ---------- Report dialog ----------
 
@@ -193,6 +215,17 @@ function updateDateLimits() {
     dateInput.max = getMaxReportDate();
 }
 
+// ---------- Name input filtering (numbers are silently removed) ----------
+
+const NAME_NUMBER_PATTERN = /\d/;
+
+nameInput.addEventListener("input", () => {
+    if (NAME_NUMBER_PATTERN.test(nameInput.value)) {
+        nameInput.value = nameInput.value.replace(/\d/g, "");
+        updateCharCounter(nameInput);
+    }
+});
+
 function setDateError(message) {
     dateError.textContent = message;
 }
@@ -215,7 +248,29 @@ function validateDate() {
 updateDateLimits();
 
 dateInput.addEventListener("change", validateDate);
-form.addEventListener("reset", () => setDateError(""));
+
+// ---------- Character counters ----------
+
+function updateCharCounter(field) {
+    const counter = form.querySelector(`[data-count-for="${field.name}"]`);
+    if (!counter) return;
+
+    const length = field.value.length;
+    counter.textContent = `${length} / ${field.maxLength}`;
+    counter.classList.toggle("at-limit", length >= field.maxLength);
+}
+
+const limitedFields = Array.from(form.querySelectorAll("[maxlength]"));
+limitedFields.forEach((field) => {
+    field.addEventListener("input", () => updateCharCounter(field));
+    updateCharCounter(field);
+});
+
+form.addEventListener("reset", () => {
+    setDateError("");
+    // Reset fires before field values are cleared, so refresh after the browser resets them.
+    requestAnimationFrame(() => limitedFields.forEach(updateCharCounter));
+});
 
 function setImageError(message) {
     imageError.textContent = message;
@@ -297,10 +352,15 @@ imageInput.addEventListener("change", async () => {
     }
 });
 
-// Clear previews and errors when the dialog is dismissed with Escape.
+// Clear previews and errors whenever the dialog is dismissed.
 dialog.addEventListener("close", () => {
     clearImages();
     setDateError("");
+});
+
+// Clicks on the backdrop are reported with the dialog itself as the target.
+dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
 });
 
 reportBtn.addEventListener("click", () => {
@@ -314,8 +374,47 @@ cancelBtn.addEventListener("click", () => {
     dialog.close();
 });
 
+const TOAST_DURATION = 4000;
+
+function showNotification(message, type = "success") {
+    let container = document.getElementById("toastContainer");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.className = "toast-container";
+        container.setAttribute("aria-live", "polite");
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+
+    const icon = document.createElement("span");
+    icon.className = "toast-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = type === "success" ? "✓" : "!";
+    toast.appendChild(icon);
+
+    const text = document.createElement("span");
+    text.textContent = message;
+    toast.appendChild(text);
+
+    container.appendChild(toast);
+
+    // Allow the entrance transition to run.
+    requestAnimationFrame(() => toast.classList.add("show"));
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+        toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+    }, TOAST_DURATION);
+}
+
 form.addEventListener("submit", (event) => {
     event.preventDefault();
+
+    // Keep the name free of numbers even if it was set programmatically.
+    nameInput.value = nameInput.value.replace(/\d/g, "");
 
     if (!validateDate()) return;
 
@@ -328,6 +427,8 @@ form.addEventListener("submit", (event) => {
 
     lostItems.push(report);
     renderItems();
+
+    showNotification(`"${report.item}" has been reported as lost.`);
 
     form.reset();
     clearImages();
