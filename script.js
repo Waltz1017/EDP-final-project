@@ -28,7 +28,7 @@ const detailClaimNotice = document.getElementById("detailClaimNotice");
 
 const MIN_REPORT_DATE = "2026-01-01";
 const MAX_REPORT_DATE = "2026-12-31";
-const MAX_IMAGES = 5;
+const MAX_IMAGES = 2;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; 
 let selectedImages = [];
 let selectionToken = 0;
