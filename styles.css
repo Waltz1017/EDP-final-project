@@ -172,6 +172,17 @@ textarea:focus-visible {
     color: #94a3b8;
 }
 
+/* Hide the browser's built-in clear icon so only the custom button shows. */
+.search-field input[type="search"]::-webkit-search-cancel-button,
+.search-field input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.search-field input[type="search"]::-ms-clear {
+    display: none;
+}
+
 .clear-search {
     position: absolute;
     top: 50%;
